@@ -33,7 +33,8 @@ Scope {
         "xenon": "#cba6f7",
         "Ambxst": "#E37363",
         "whisker": "#ffffff",
-        "ocean": "#94e2d5"
+        "ocean": "#94e2d5",
+        "nucleus-shell": "#a569bb"
     }
     property color defaultFlavourColor: "#b4befe"
     property string iconsBasePath: Quickshell.shellPath("icons/")
@@ -44,7 +45,8 @@ Scope {
         "xenon": "xenon.svg",
         "dms": "dms.svg",
         "Ambxst": "ambxst.png",
-        "whisker": "whisker.png"
+        "whisker": "whisker.png",
+        "nucleus-shell": "nucleus.png"
     }
     property string currentFlavour: ""
     property var flavourInstallStatus: ({
