@@ -58,24 +58,52 @@ func ApplyKeybinds(flavour string, config Config) {
 	}
 }
 
-func ApplyFlavour(flavour string, config Config) {
-	// kill old qs
+func ApplyFlavour(target string, config Config) {
 	exec.Command("pkill", "-x", "qs").Run()
 	exec.Command("caelestia", "shell", "-k").Run()
 	exec.Command("whisker", "shell", "stop").Run()
 
-	// start new one
-	if flavour == "dms" {
+	if target == "dms" {
 		exec.Command("dms", "run", "-d").Run()
-	} else if flavour == "Ambxst" {
-		exec.Command("ambxst").Run()
-	} else if flavour == "whisker" {
-		exec.Command("whisker","shell").Run()
-	} else {
-		exec.Command("hyprctl", "dispatch", "exec", "qs -c "+flavour).Run()
+		ApplyKeybinds("dms", config)
+		return
 	}
 
-	ApplyKeybinds(flavour, config)
+	if target == "Ambxst" {
+		exec.Command("ambxst").Run()
+		ApplyKeybinds("Ambxst", config)
+		return
+	}
+
+	if target == "whisker" {
+		exec.Command("whisker", "shell").Run()
+		ApplyKeybinds("whisker", config)
+		return
+	}
+
+	var shellFile string
+
+	filepath.WalkDir(target, func(path string, d os.DirEntry, err error) error {
+		if err != nil || shellFile != "" {
+			return nil
+		}
+
+		if !d.IsDir() && d.Name() == "shell.qml" {
+			shellFile = path
+			return filepath.SkipDir
+		}
+
+		return nil
+	})
+
+	if shellFile != "" {
+		exec.Command("hyprctl", "dispatch", "exec", "qs -p "+shellFile).Run()
+	} else {
+		exec.Command("hyprctl", "dispatch", "exec", "qs -c "+target).Run()
+	}
+
+	flavourName := filepath.Base(target)
+	ApplyKeybinds(flavourName, config)
 }
 
 // TogglePanel opens the panel if not running, closes it if running

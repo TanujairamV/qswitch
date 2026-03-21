@@ -27,7 +27,7 @@ Scope {
     property color cYellow: "#f9e2af"
     property var flavourColors: {
         "ii": "#51debd",
-        "caelestia": "#a6e3a1",
+        "caelestia": "#49433b",
         "noctalia-shell": "#a9aefe",
         "dms": "#D0BCFF",
         "xenon": "#cba6f7",
@@ -41,7 +41,7 @@ Scope {
     property var flavourIcons: {
         "ii": "ii.svg",
         "noctalia-shell": "noctalia.svg",
-        "caelestia": "pacman.svg",
+        "caelestia": "caelestia.svg",
         "xenon": "xenon.svg",
         "dms": "dms.svg",
         "Ambxst": "ambxst.png",

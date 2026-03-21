@@ -18,41 +18,58 @@ func ReadState() string {
 	return strings.TrimSpace(string(data))
 }
 
-func WriteState(f string) { os.WriteFile(stateFile, []byte(f), 0644) }
-
-// IsFlavourInstalled checks if a flavour configuration exists
-// A flavour is installed if it has a directory in /etc/xdg/quickshell/<flavour>
-// or ~/.config/quickshell/<flavour>, and the required command is available
-func IsFlavourInstalled(flavour string) bool {
-
-	if flavour == "dms" {
-		// Check if dms command is available
-		_, err := exec.LookPath("dms")
-		if err != nil {
-			return false
-		}
-		return true
-	}
-
-	// Check in ~/.config/quickshell/<flavour>
-	userPath := filepath.Join(os.Getenv("HOME"), ".config", "quickshell", flavour)
-	if _, err := os.Stat(userPath); err == nil {
-		return true
-	}
-
-	// Check in /etc/xdg/quickshell/<flavour>
-	systemPath := filepath.Join("/etc/xdg/quickshell", flavour)
-	if _, err := os.Stat(systemPath); err == nil {
-		return true
-	}
-
-	return false
+func WriteState(f string) {
+	os.WriteFile(stateFile, []byte(f), 0644)
 }
 
-// CheckFirstRun checks if state file exists
-// Returns true if setup is needed (never run before)
+func GetFlavourPath(flavour string) (string, bool) {
+
+	if flavour == "dms" {
+		_, err := exec.LookPath("dms")
+		if err != nil {
+			return "", false
+		}
+		return flavour, true
+	}
+
+	roots := []string{
+		filepath.Join(os.Getenv("HOME"), ".config", "quickshell"),
+		"/etc/xdg/quickshell",
+		"/usr/share/quickshell",
+		"/usr/local/share/quickshell",
+	}
+
+	for _, root := range roots {
+
+		foundPath := ""
+
+		filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+			if err != nil || foundPath != "" {
+				return nil
+			}
+
+			if d.IsDir() && filepath.Base(path) == flavour {
+				foundPath = path
+				return filepath.SkipDir
+			}
+
+			return nil
+		})
+
+		if foundPath != "" {
+			return foundPath, true
+		}
+	}
+
+	return "", false
+}
+
+func IsFlavourInstalled(flavour string) bool {
+	_, ok := GetFlavourPath(flavour)
+	return ok
+}
+
 func CheckFirstRun() bool {
-	// Skip check if user has already run qswitch before (state file exists)
 	if _, err := os.Stat(stateFile); err == nil {
 		return false
 	}
